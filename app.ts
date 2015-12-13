@@ -42,14 +42,64 @@ enum InventoryContents {
   DoubleJump
 }
 
+class RingGuideThing extends Sprite {
+  private _ring: Sprite;
+  private _dot: Sprite;
+  private _ticks: number = 0;
+
+  constructor() {
+    super();
+
+    this._ring = new Sprite("assets/ring.png").addTo(this).moveTo(-50, -50);
+    this._dot = new Sprite("assets/dot.png").addTo(this).moveTo(0, 0);
+
+    this._ring.z = 0;
+    this._dot.z  = 1;
+
+    this._ticks = 0;
+  }
+
+  update(): void {
+    this._ticks++;
+
+    const theta = this._ticks / 20;
+    const x = Math.sin(theta) * 50;
+    const y = Math.cos(theta) * 50;
+
+    this._dot.x = x - 6; // subtract half width of dot plus random fudge factor bc i dont understand trigonometry -_-
+    this._dot.y = y - 6;
+  }
+
+  public get aimedX(): number {
+    const theta = this._ticks / 20;
+
+    return Math.sin(theta);
+  }
+
+  public get aimedY(): number {
+    const theta = this._ticks / 20;
+
+    return Math.cos(theta);
+  }
+}
+
 // We are using health as fuel here
 
+@component(new PhysicsComponent({
+  immovable: true,
+  solid: true
+}))
 class Ship extends Sprite implements HasHealth {
   public inventory: Inventory;
 
   healthEvents: Events<HealthEvents>;
   health: number;
   maxHealth: number;
+
+  vx: number = 0;
+  vy: number = 0;
+
+  private ringThing: RingGuideThing;
 
   /**
    * Note: Pass in cloned inventory rather than original.
@@ -64,6 +114,10 @@ class Ship extends Sprite implements HasHealth {
 
     this.x = 200;
     this.y = 200;
+
+    this.ringThing = new RingGuideThing().addTo(this);
+
+    this.physics.collidesWith = G.walls;
   }
 
   addItemToInventory(item: InventoryContents): void {
@@ -71,7 +125,34 @@ class Ship extends Sprite implements HasHealth {
   }
 
   update(): void {
-    
+    super.update();
+
+    this.ringThing.moveTo(16, 16);
+
+    if (Globals.keyboard.justDown.Z) {
+      this.tween.addTween("showRing", 30, e => {
+        this.ringThing.alpha = e.percentage;
+      })
+    }
+
+    if (!Globals.keyboard.down.Z) {
+      this.ringThing.alpha = 0;
+    }
+
+    if (Globals.keyboard.justDown.X && Globals.keyboard.down.Z) {
+      this.vx = this.ringThing.aimedX * 10;
+      this.vy = this.ringThing.aimedY * 10;
+    }
+
+    if (this.vx != 0 || this.vy != 0) {
+      this.physics.moveBy(this.vx, this.vy);
+
+      this.vx += -Util.Sign(this.vx) * 0.1;
+      this.vy += -Util.Sign(this.vy) * 0.1;
+
+      if (Math.abs(this.vx) <= .1) this.vx = 0;
+      if (Math.abs(this.vy) <= .1) this.vy = 0;
+    }
   }
 }
 
