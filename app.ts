@@ -89,6 +89,7 @@ class RingGuideThing extends Sprite {
   immovable: true,
   solid: true
 }))
+@component(new FollowWithCamera())
 class Ship extends Sprite implements HasHealth {
   public inventory: Inventory;
 
@@ -152,6 +153,13 @@ class Ship extends Sprite implements HasHealth {
 
       if (Math.abs(this.vx) <= .1) this.vx = 0;
       if (Math.abs(this.vy) <= .1) this.vy = 0;
+
+      const summedVelocity = (Math.abs(this.vx) + Math.abs(this.vy));
+
+      if ((summedVelocity < 8 && Math.random() > .9) ||
+          (summedVelocity > 8 && Math.random() > .3)) {
+        G.staticEmitter.emitAt(this.x + this.width / 2, this.y + this.height / 2, -this.vx, -this.vy);
+      }
     }
   }
 }

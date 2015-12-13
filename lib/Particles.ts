@@ -295,12 +295,25 @@ class ParticleExplosionMaker extends Particles {
 }
 
 class ParticleEmitter extends Particles {
+  private _dx: number;
+  private _dy: number;
+
   constructor(path: string, particleWidth: number, particleHeight: number, textureWidth: number, textureHeight: number) {
     super(path, particleWidth, particleHeight, textureWidth, textureHeight);
+
+    this._dx = 0;
+    this._dy = -.6;
   }
 
-  emitAt(x: number, y: number): void {
+  emitAt(x: number, y: number, dx: number, dy: number): void {
     const p = this.addParticles(1);
+
+    // TODO - instead of setting _dx and _dy here to be picked up by
+    // particleBehavior, restructure this so I can simply pass in a behavior
+    // into addParticles.
+
+    this._dx = dx;
+    this._dy = dy;
 
     for (let i = 0; i < p.length; i++) {
       p[i].x = x;
@@ -325,8 +338,8 @@ class ParticleEmitter extends Particles {
     return {
       lifetime: Util.RandomRange(60, 180),
       scale: Util.RandomRange(.5, 2),
-      dx: Util.RandomRange(-.4, .4),
-      dy: Util.RandomRange(-.4, -.7),
+      dx: Util.RandomRange(-.4 + this._dx, .4 + this._dx),
+      dy: Util.RandomRange(.1 + this._dy, -.1 + this._dy),
       rotation: Util.RandomRange(-.5, .5)
     };
   }
