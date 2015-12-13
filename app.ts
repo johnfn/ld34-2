@@ -330,7 +330,8 @@ class MyGame extends Game {
 
     G.map = new TiledMapParser("assets/map.json")
       .addObjectParser(22, (texture, json) => {
-        console.log("yay!");
+        const props = json.properties as CustomTileProperties;
+        console.log(props.powerupType);
 
         return null;
       })
