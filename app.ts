@@ -24,6 +24,7 @@ type Inventory = MagicDict<InventoryContents, number>;
 class G {
   static ship: Ship;
   static inventory: MagicDict<InventoryContents, number>;
+  static bg: ParallaxLayer;
 
   static map: TiledMapParser;
   static hud: HUD;
@@ -138,6 +139,14 @@ class Ship extends Sprite implements HasHealth {
 
     if (!Globals.keyboard.down.Z) {
       this.ringThing.alpha = 0;
+    }
+
+    if (Globals.keyboard.down.S) {
+      this.vy = 10;
+    }
+
+    if (Globals.keyboard.down.D) {
+      this.vx = 10;
     }
 
     if (Globals.keyboard.justDown.X && Globals.keyboard.down.Z) {
@@ -345,6 +354,8 @@ class MyGame extends Game {
     G.inventory.put(InventoryContents.Fuel, 2)
 
     G.ship = new Ship(G.inventory.clone());
+
+    G.bg = new ParallaxLayer("assets/bg.png");
 
     Globals.camera.x = Globals.stage.width / 2;
     Globals.camera.y = Globals.stage.height / 2;
